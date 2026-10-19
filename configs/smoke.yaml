@@ -1,0 +1,27 @@
+# Offline pipeline check on the synthetic fixture. Stub embedder, extractive generator, lexical
+# faithfulness: no model downloads. Numbers from this file are not results.
+seed: 0
+
+data:
+  source: synthetic
+  synthetic: {n_docs: 6, paragraphs: 5}
+
+embedder: {type: hashing, dim: 512}
+
+chunkers:
+  - {name: fixed, type: fixed, unit: tokens, size: 40, overlap: 10}
+  - {name: sentence_window, type: sentence_window, unit: tokens, size: 40, window: 3, stride: 2}
+  - {name: recursive, type: recursive, unit: tokens, size: 40}
+
+retrieval: {modes: [dense, bm25, hybrid], tau: 0.5, bootstrap: 200}
+
+generator: {type: extractive}
+faithfulness: {scorer: lexical, threshold: 0.7}
+
+answers: {chunker: recursive, mode: hybrid, top_k: 3, context_budget: 200, n_questions: 20}
+
+output:
+  metrics: results/smoke/retrieval_metrics.json
+  answers: results/smoke/answer_metrics.json
+
+app: {max_upload_mb: 20, top_k: 5, context_budget: 1024}

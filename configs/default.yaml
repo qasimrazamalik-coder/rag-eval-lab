@@ -1,0 +1,51 @@
+# Real run on SQuAD v2 dev (see scripts/download_data.py). Needs the models below in the HF cache.
+seed: 0
+
+data:
+  source: squad
+  corpus: data/squad_dev/docs.jsonl
+  eval: data/squad_dev/eval.jsonl
+
+embedder:
+  type: sentence_transformers
+  model_name: sentence-transformers/all-MiniLM-L6-v2   # swap for BAAI/bge-small-en-v1.5 to compare
+  query_prefix: ""        # bge-small-en-v1.5 expects "Represent this sentence for searching relevant passages: "
+  document_prefix: ""
+  batch_size: 64
+
+# Same budget (128 regex tokens) for all three so only the splitting logic differs.
+chunkers:
+  - {name: fixed, type: fixed, unit: tokens, size: 128, overlap: 32}
+  - {name: sentence_window, type: sentence_window, unit: tokens, size: 128, window: 4, stride: 3}
+  - {name: recursive, type: recursive, unit: tokens, size: 128}
+
+retrieval:
+  modes: [dense, bm25, hybrid]
+  tau: 0.5                # relevance overlap threshold, see metrics.py
+  bootstrap: 1000
+
+generator:
+  type: transformers
+  model_name: Qwen/Qwen2.5-0.5B-Instruct
+  max_new_tokens: 128
+
+faithfulness:
+  scorer: nli             # nli | lexical
+  model_name: cross-encoder/nli-deberta-v3-small
+  threshold: 0.5
+
+answers:
+  chunker: recursive
+  mode: dense
+  top_k: 5
+  context_budget: 1024    # generator tokens spent on context
+  n_questions: 100
+
+output:
+  metrics: results/retrieval_metrics.json
+  answers: results/answer_metrics.json
+
+app:
+  max_upload_mb: 20
+  top_k: 5
+  context_budget: 1024

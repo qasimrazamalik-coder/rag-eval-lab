@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag-eval-lab"
+version = "0.1.0"
+description = "PDF question answering with a retrieval evaluation that compares three chunking strategies."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Qasim Raza Malik" }]
+dependencies = [
+  "numpy>=1.26",
+  "pyyaml>=6.0",
+  "tqdm>=4.66",
+  "gradio>=6.0",
+  "pypdf>=4.0",
+  "faiss-cpu>=1.8",
+  "sentence-transformers>=3.0",
+  "transformers>=4.44",
+  "torch>=2.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.5", "reportlab>=4.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests", "app"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["app"]
+
+[tool.ruff.lint.per-file-ignores]
+"app/app.py" = ["E402"]
+"tests/test_models_offline.py" = ["E402"]
